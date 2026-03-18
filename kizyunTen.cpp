@@ -15,12 +15,10 @@ KizyunTen::KizyunTen(){
 KizyunTen::KizyunTen(int n, std::string txtFilePath, std::string photoType)
     :m_n(n), m_txtFilePath(txtFilePath){
 
-    std::vector<std::string> vs = splitString(txtFilePath, '.');
-    std::string secondLastString = vs[vs.size()-2];
-    m_ABCD = secondLastString[secondLastString.size()-1];
-
-    // // 画像座標のtxtファイルからの読み込み
-    // readTxtFile(m_txtFilePath);    // 下のsetKizyunの中で世界座標計算後に実行するようにして、txtFileに従ってXtilderやxTilderを設定するようにする 2025.10.19--
+    // std::vector<std::string> vs = splitString(txtFilePath, '.');
+    // std::string secondLastString = vs[vs.size()-2];
+    // m_ABCD = secondLastString[secondLastString.size()-1];
+    m_ABCD = 'A';
 
     if(photoType=="410") setKizyun3D_410();
     else if(photoType=="box") setKizyun3D_box();
@@ -44,7 +42,7 @@ KizyunTen::KizyunTen(int n, std::string txtFilePath, std::string photoType)
     }
     // exit(0);//////////////////////////
 
-    // 正規化
+    // normalization
     double m[2];  // m[j], j=0,1
     for(int j=0; j<2; j++){
         m[j] = 0.0;
@@ -71,7 +69,7 @@ KizyunTen::KizyunTen(int n, std::string txtFilePath, std::string photoType)
     m_Ts = s;
     for(int j=0; j<2; j++) m_Tt[j] = t[j];
 
-    // 行列 m_T[3][3]
+    // Matrix m_T[3][3]
     for(int i=0; i<3; i++){
         for(int j=0; j<3; j++){
             m_T[i][j] = 0.0;
@@ -97,7 +95,7 @@ KizyunTen::KizyunTen(int n, std::string txtFilePath, std::string photoType)
         }
     }
 
-    // 世界座標の正規化
+    // normalize world coordinates
     double M[3];
     for(int j=0; j<3; j++){
         M[j] = 0.0;
@@ -123,7 +121,7 @@ KizyunTen::KizyunTen(int n, std::string txtFilePath, std::string photoType)
     m_Us = s;
     for(int j=0; j<3; j++) m_Ut[j] = t[j];
     
-    // 行列 m_U[4][4]
+    // Matrix m_U[4][4]
     for(int i=0; i<4; i++){
         for(int j=0; j<4; j++){
             m_U[i][j] = 0.0;
@@ -137,7 +135,7 @@ KizyunTen::KizyunTen(int n, std::string txtFilePath, std::string photoType)
     m_U[2][3] = m_Ut[2];
     m_U[3][3] = 1.0;
 
-    // 行列 m_Uinv[4][4]
+    // Matrix m_Uinv[4][4]
     for(int i=0; i<4; i++){
         for(int j=0; j<4; j++){
             m_Uinv[i][j] = 0.0;
@@ -304,7 +302,7 @@ void KizyunTen::setKizyun3D_410(){
   
     // std::cout << "ABCD=" << m_ABCD << std::endl;  /////////////////////t
 
-    // 世界座標の設定
+    // Set world coordinates
     if(m_ABCD == 'A'){
         m_He[0] = 0.0;
         m_He[1] = gc.hL + gc.mY*std::sin(gc.theta_p*gc.pi/180.0);
@@ -431,7 +429,6 @@ void KizyunTen::setKizyun3D_410(){
     // std::cout << "Bpw.X=" << m_Bpw[0] << " Bpw.Y=" << m_Bpw[1] << " Bpw.Z=" << m_Bpw[2] << std::endl;
     // exit(0);
 
-    // 画像座標のテキストファイルの読み込み。この中で一緒にm_Xtilderやm_xTilderも順にセットするようにする 2025.10.19--
     readTxtFile(m_txtFilePath);
 
     // for(int i=0; i<m_n; i++){///////////////////
@@ -453,7 +450,7 @@ void KizyunTen::setKizyun3D_410(){
 void KizyunTen::setKizyun3D_box(){
     GlobalConstants gc;
   
-    // 世界座標の設定
+    // Set world coordinates
     m_He[0] = 0.0;
     m_He[1] = 320.0;
     m_He[2] = 0.0; 
@@ -482,7 +479,6 @@ void KizyunTen::setKizyun3D_box(){
     m_Ple[1] = 0.0;
     m_Ple[2] = m_Phe[2];
 	
-    // 画像座標のテキストファイルの読み込み。この中で一緒にm_Xtilderやm_xTilderも順にセットするようにする 2025.10.19--
     readTxtFile(m_txtFilePath);
 
 }
@@ -493,7 +489,7 @@ void KizyunTen::setKizyun3D_array(){
   
     // std::cout << "ABCD=" << m_ABCD << std::endl;  /////////////////////t
 
-    // 世界座標の設定
+    // Set world coordinates
     if(m_ABCD == 'A'){
         m_He[0] = 0.0;
         m_He[1] = gc.hL + (gc.mY*4+gc.deltaY*3)*std::sin(gc.theta_p*gc.pi/180.0);
@@ -524,11 +520,10 @@ void KizyunTen::setKizyun3D_array(){
         m_Lw[2] = m_Le[2];
     }
 
-    // 画像座標のテキストファイルの読み込み。この中で一緒にm_Xtilderやm_xTilderも順にセットするようにする 2025.10.19--
     readTxtFile(m_txtFilePath);
 }
 
-/*** 画像の基準点座標が記録されたtxtファイルを読む ***/
+/*** Read image coordinates ***/
 void KizyunTen::readTxtFile(std::string txtFileName){
     std::cout << "Read file '" << txtFileName << "'\n";
     
@@ -538,7 +533,7 @@ void KizyunTen::readTxtFile(std::string txtFileName){
         exit(-1);
     }
 
-    int kizNum {0};   // txtファイルから読み取る基準点の番号
+    int kizNum {0};   // number of image coordinates
     std::string str;
     while(std::getline(ifs, str)){
 	if(str[0]=='/' && str[1]=='/') continue;  // comment out lines
@@ -734,7 +729,7 @@ void KizyunTen::readTxtFile(std::string txtFileName){
     // exit(0);///////////////////////
 }
 
-/********    文字列strを文字cで分割する 連続したcはひとつとみなす    ***************/
+/********   Split string   ***************/
 std::vector<std::string> KizyunTen::splitString(std::string str, char c){
     std::vector<std::string> ret;
 
@@ -744,7 +739,7 @@ std::vector<std::string> KizyunTen::splitString(std::string str, char c){
     while(true){
         int i1 = str.find_first_of(c, i0);
 
-        if(i0==i1){   // 最初の文字がスペース
+        if(i0==i1){   // If the first character is space
             i0 = i1+1;
             continue;
         }else if(i1 == std::string::npos){
